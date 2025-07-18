@@ -1,16 +1,49 @@
 ---
+// Definimos cómo se ve un 'Post'
+interface Post {
+  id: number;
+  title: {
+    rendered: string;
+  };
+  link: string;
+  slug: string; // <-- AÑADIDO
+}
 
+// URL de tu API de WordPress.
+const WP_API_URL = `${import.meta.env.PUBLIC_WP_API_URL}/posts`;
+
+// Hacemos la petición a WordPress
+const response = await fetch(WP_API_URL);
+const posts: Post[] = await response.json();
 ---
-
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Mi Blog Headless</title>
+  <style>
+    body { font-family: sans-serif; background-color: #f0f2f5; color: #1c1e21;}
+    main { max-width: 800px; margin: 2rem auto; padding: 1rem; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h1 { color: #1877f2; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 0.5rem; border-bottom: 1px solid #ddd; }
+    a { text-decoration: none; color: #050505; font-size: 1.1rem; }
+    a:hover { color: #1877f2; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Mi Blog con Astro y WordPress</h1>
+    <ul>
+      {posts.map((post) => (
+        <li>
+          {/* 👇 CAMBIO IMPORTANTE AQUÍ 👇 */}
+          <a href={`/blog/${post.slug}`}>
+            {post.title.rendered}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </main>
+</body>
 </html>

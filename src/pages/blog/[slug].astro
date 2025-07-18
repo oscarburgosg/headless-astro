@@ -1,0 +1,42 @@
+---
+// --- BLOQUE 1: GENERADOR DE PÁGINAS ---
+// La función getStaticPaths es obligatoria en rutas dinámicas.
+// Su misión es decirle a Astro qué páginas debe construir.
+export async function getStaticPaths() {
+  // 1. Pedimos la lista de todos los posts a WordPress
+  const WP_API_URL = `${import.meta.env.PUBLIC_WP_API_URL}/posts`;  const response = await fetch(WP_API_URL);
+  const posts = await response.json();
+
+  // 2. Creamos una página para cada post
+  return posts.map((post) => ({
+    params: { slug: post.slug }, // El 'slug' define la URL (ej. /blog/hola-mundo)
+    props: { post },            // 'props' pasa toda la info del post a la parte HTML
+  }));
+}
+
+// --- BLOQUE 2: OBTENER DATOS Y RENDERIZAR ---
+// Astro.props contiene la información que pasamos desde getStaticPaths
+const { post } = Astro.props;
+---
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>{post.title.rendered}</title>
+  <style>
+    body { font-family: sans-serif; background-color: #f0f2f5; color: #1c1e21; line-height: 1.6; }
+    main { max-width: 800px; margin: 2rem auto; padding: 2rem; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h1 { color: #1877f2; line-height: 1.2; }
+    .post-content img { max-width: 100%; height: auto; border-radius: 8px; }
+    .back-link { display: inline-block; margin-bottom: 2rem; color: #1877f2; text-decoration: none; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="/" class="back-link">&larr; Volver a todos los posts</a>
+    <h1>{post.title.rendered}</h1>
+    {/* El contenido de WordPress es HTML, usamos set:html para renderizarlo */}
+    <div class="post-content" set:html={post.content.rendered} />
+  </main>
+</body>
+</html>
