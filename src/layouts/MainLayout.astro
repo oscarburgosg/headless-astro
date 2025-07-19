@@ -1,0 +1,70 @@
+---
+export interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Blog headless con Astro y WordPress" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body class="bg-slate-900 text-slate-100 min-h-screen">
+    <header class="bg-slate-800 shadow-lg">
+      <nav class="container mx-auto px-4 py-6">
+        <a href="/" class="text-2xl font-bold text-cyan-400 hover:text-cyan-300 transition-colors">
+          Whole Wavelength
+        </a>
+      </nav>
+    </header>
+    
+    <main class="container mx-auto px-4 py-8">
+      <slot />
+    </main>
+    
+    <footer class="bg-slate-800 mt-16">
+      <div class="container mx-auto px-4 py-6 text-center text-slate-400">
+        <p>&copy; 2024 Whole Wavelength. Powered by Astro & WordPress.</p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  html {
+    font-family: system-ui, sans-serif;
+  }
+  
+  .prose {
+    color: #e2e8f0;
+  }
+  
+  .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    color: #67e8f9;
+  }
+  
+  .prose a {
+    color: #67e8f9;
+    text-decoration: underline;
+  }
+  
+  .prose a:hover {
+    color: #22d3ee;
+  }
+  
+  .prose p {
+    margin-bottom: 1rem;
+    line-height: 1.7;
+  }
+  
+  .prose img {
+    border-radius: 0.5rem;
+    margin: 1.5rem 0;
+  }
+</style>

@@ -1,55 +1,66 @@
 ---
-// --- BLOQUE DE TIPOS ---
-// Definimos la estructura de un Post, incluyendo el contenido que vamos a usar.
-interface Post {
-  slug: string;
-  title: {
-    rendered: string;
-  };
-  content: {
-    rendered: string;
-  };
-}
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getAllPosts, formatDate, type WordPressPost } from '../../lib/wordpress';
 
-// --- BLOQUE 1: GENERADOR DE PÁGINAS ---
-// La función getStaticPaths es obligatoria en rutas dinámicas.
-// Su misión es decirle a Astro qué páginas debe construir.
 export async function getStaticPaths() {
-  // 1. Pedimos la lista de todos los posts a WordPress
-  const WP_API_URL = `${import.meta.env.PUBLIC_WP_API_URL}/posts`;
-  const response = await fetch(WP_API_URL);
-  const posts: Post[] = await response.json();
-
-  // 2. Creamos una página para cada post
-  return posts.map((post) => ({
-    params: { slug: post.slug }, // El 'slug' define la URL (ej. /blog/hola-mundo)
-    props: { post },            // 'props' pasa toda la info del post a la parte HTML
-  }));
+  try {
+    const posts = await getAllPosts({ per_page: 100 }); // Obtener más posts para generar todas las páginas
+    
+    return posts.map((post: WordPressPost) => ({
+      params: { slug: post.slug },
+      props: { post },
+    }));
+  } catch (error) {
+    console.error('Error generating static paths:', error);
+    return [];
+  }
 }
 
-// --- BLOQUE 2: OBTENER DATOS Y RENDERIZAR ---
-// Astro.props contiene la información que pasamos desde getStaticPaths
-const { post } = Astro.props as { post: Post };
+const { post } = Astro.props as { post: WordPressPost };
 ---
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width" />
-  <title>{post.title.rendered}</title>
-  <style>
-    body { font-family: sans-serif; background-color: #f0f2f5; color: #1c1e21; line-height: 1.6; }
-    main { max-width: 800px; margin: 2rem auto; padding: 2rem; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    h1 { color: #1877f2; line-height: 1.2; }
-    .post-content img { max-width: 100%; height: auto; border-radius: 8px; }
-    .back-link { display: inline-block; margin-bottom: 2rem; color: #1877f2; text-decoration: none; font-weight: bold; }
-  </style>
-</head>
-<body>
-  <main>
-    <a href="/" class="back-link">&larr; Volver a todos los posts</a>
-    <h1>{post.title.rendered}</h1>
-    {/* El contenido de WordPress es HTML, usamos set:html para renderizarlo */}
-    <div class="post-content" set:html={post.content.rendered} />
-  </main>
-</body>
-</html>
+<MainLayout title={post.title.rendered}>
+  <div class="max-w-4xl mx-auto">
+    <nav class="mb-8">
+      <a href="/" class="inline-flex items-center text-cyan-400 hover:text-cyan-300 transition-colors">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Volver a todos los posts
+      </a>
+    </nav>
+    
+    <header class="mb-8">
+      <h1 class="text-4xl font-bold mb-4 text-cyan-400" set:html={post.title.rendered} />
+      
+      <div class="flex items-center text-slate-400 text-sm space-x-4">
+        <time datetime={post.date}>
+          Publicado el {formatDate(post.date)}
+        </time>
+        
+        {post.modified !== post.date && (
+          <span>
+            Actualizado el {formatDate(post.modified)}
+          </span>
+        )}
+      </div>
+    </header>
+    
+    <article class="prose prose-invert prose-lg max-w-none">
+      <div set:html={post.content.rendered} />
+    </article>
+    
+    <footer class="mt-12 pt-8 border-t border-slate-700">
+      <div class="text-center">
+        <a 
+          href="/" 
+          class="inline-flex items-center px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors font-medium"
+        >
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Ver más posts
+        </a>
+      </div>
+    </footer>
+  </div>
+</MainLayout>
