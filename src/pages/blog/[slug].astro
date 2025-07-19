@@ -1,11 +1,24 @@
 ---
+// --- BLOQUE DE TIPOS ---
+// Definimos la estructura de un Post, incluyendo el contenido que vamos a usar.
+interface Post {
+  slug: string;
+  title: {
+    rendered: string;
+  };
+  content: {
+    rendered: string;
+  };
+}
+
 // --- BLOQUE 1: GENERADOR DE PÁGINAS ---
 // La función getStaticPaths es obligatoria en rutas dinámicas.
 // Su misión es decirle a Astro qué páginas debe construir.
 export async function getStaticPaths() {
   // 1. Pedimos la lista de todos los posts a WordPress
-  const WP_API_URL = `${import.meta.env.PUBLIC_WP_API_URL}/posts`;  const response = await fetch(WP_API_URL);
-  const posts = await response.json();
+  const WP_API_URL = `${import.meta.env.PUBLIC_WP_API_URL}/posts`;
+  const response = await fetch(WP_API_URL);
+  const posts: Post[] = await response.json();
 
   // 2. Creamos una página para cada post
   return posts.map((post) => ({
@@ -16,7 +29,7 @@ export async function getStaticPaths() {
 
 // --- BLOQUE 2: OBTENER DATOS Y RENDERIZAR ---
 // Astro.props contiene la información que pasamos desde getStaticPaths
-const { post } = Astro.props;
+const { post } = Astro.props as { post: Post };
 ---
 <html lang="es">
 <head>
